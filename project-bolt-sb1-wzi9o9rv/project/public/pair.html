@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pair Programming - Smart Coding Environment</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="logo-icon">⚡</span>
+                    Smart Code
+                </h1>
+                <nav class="nav">
+                    <a href="/" class="nav-link">Editor</a>
+                    <a href="/pair/new-session" class="nav-link active">Pair Code</a>
+                    <a href="/study/new-group" class="nav-link">Study Group</a>
+                </nav>
+                <div class="connection-status">
+                    <span id="connectionStatus" class="status-indicator">Connecting...</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="editor-container">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <select id="languageSelector" class="language-selector">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="java">Java</option>
+                            <option value="cpp">C++</option>
+                        </select>
+                        <button id="runBtn" class="btn btn-primary">
+                            <span class="btn-icon">▶</span>
+                            Run Code
+                        </button>
+                        <div class="session-info">
+                            <span>Session: <strong id="sessionId"></strong></span>
+                            <button id="copySessionUrl" class="btn btn-small">Copy URL</button>
+                        </div>
+                    </div>
+                    <div class="toolbar-right">
+                        <div id="connectedUsers" class="connected-users">
+                            <span class="users-label">Connected:</span>
+                            <div class="users-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editor-wrapper">
+                    <div id="editor" class="editor"></div>
+                    <div class="output-container">
+                        <div class="output-header">
+                            <h3>Output</h3>
+                            <button id="clearOutput" class="btn-clear">Clear</button>
+                        </div>
+                        <div id="output" class="output"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script src="../js/pair.js"></script>
+</body>
+</html>

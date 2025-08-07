@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Groups - Smart Coding Environment</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="logo-icon">⚡</span>
+                    Smart Code
+                </h1>
+                <nav class="nav">
+                    <a href="/" class="nav-link">Editor</a>
+                    <a href="/pair/new-session" class="nav-link">Pair Code</a>
+                    <a href="/groups" class="nav-link active">Study Groups</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="groups-container">
+                <div class="groups-header">
+                    <h2>Study Groups</h2>
+                    <button id="createGroupBtn" class="btn btn-primary">
+                        <span class="btn-icon">➕</span>
+                        Create New Group
+                    </button>
+                </div>
+
+                <div class="groups-grid" id="groupsGrid">
+                    <div class="loading-message">Loading study groups...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div id="createGroupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Study Group</h3>
+                <button id="closeCreateModal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="groupNameInput" placeholder="Enter group name (optional)" class="share-input">
+                <div class="modal-actions">
+                    <button id="confirmCreateGroup" class="btn btn-primary">Create Group</button>
+                    <button id="cancelCreateGroup" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket;
+
+        // Initialize Socket.io for real-time updates
+        socket = io();
+
+        // Load groups on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGroups();
+        });
+
+        // Socket event handlers for real-time updates
+        socket.on('group-updated', (data) => {
+            updateGroupUserCount(data.id, data.userCount);
+        });
+
+        socket.on('group-removed', (groupId) => {
+            removeGroupFromList(groupId);
+        });
+
+        // Create group button
+        document.getElementById('createGroupBtn').addEventListener('click', function() {
+            document.getElementById('createGroupModal').classList.add('active');
+            document.getElementById('groupNameInput').focus();
+        });
+
+        // Close modal handlers
+        document.getElementById('closeCreateModal').addEventListener('click', function() {
+            document.getElementById('createGroupModal').classList.remove('active');
+        });
+
+        document.getElementById('cancelCreateGroup').addEventListener('click', function() {
+            document.getElementById('createGroupModal').classList.remove('active');
+        });
+
+        // Create group confirmation
+        document.getElementById('confirmCreateGroup').addEventListener('click', async function() {
+            const groupName = document.getElementById('groupNameInput').value.trim();
+            await createGroup(groupName);
+        });
+
+        // Enter key to create group
+        document.getElementById('groupNameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('confirmCreateGroup').click();
+            }
+        });
+
+        // Modal close on outside click
+        document.getElementById('createGroupModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+
+        async function loadGroups() {
+            try {
+                const response = await fetch('/api/groups');
+                const groups = await response.json();
+                displayGroups(groups);
+            } catch (error) {
+                console.error('Error loading groups:', error);
+                document.getElementById('groupsGrid').innerHTML = 
+                    '<div class="error-message">Error loading study groups</div>';
+            }
+        }
+
+        function displayGroups(groups) {
+            const groupsGrid = document.getElementById('groupsGrid');
+            
+            if (groups.length === 0) {
+                groupsGrid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📚</div>
+                        <h3>No Study Groups Yet</h3>
+                        <p>Create the first study group to start collaborating!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            groupsGrid.innerHTML = groups.map(group => `
+                <div class="group-card" data-group-id="${group.id}">
+                    <div class="group-header">
+                        <h3 class="group-name">${escapeHtml(group.name)}</h3>
+                        <span class="group-id">ID: ${group.id}</span>
+                    </div>
+                    <div class="group-info">
+                        <div class="group-stat">
+                            <span class="stat-icon">👥</span>
+                            <span class="stat-value" data-user-count="${group.id}">${group.userCount}</span>
+                            <span class="stat-label">members</span>
+                        </div>
+                        <div class="group-stat">
+                            <span class="stat-icon">📅</span>
+                            <span class="stat-value">${formatDate(group.createdAt)}</span>
+                        </div>
+                    </div>
+                    <div class="group-actions">
+                        <button class="btn btn-primary join-group-btn" data-group-id="${group.id}">
+                            <span class="btn-icon">🚀</span>
+                            Join Group
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add event listeners to join buttons
+            document.querySelectorAll('.join-group-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const groupId = this.dataset.groupId;
+                    joinGroup(groupId);
+                });
+            });
+        }
+
+        async function createGroup(name) {
+            try {
+                const response = await fetch('/api/groups', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name })
+                });
+
+                const result = await response.json();
+                
+                // Close modal
+                document.getElementById('createGroupModal').classList.remove('active');
+                document.getElementById('groupNameInput').value = '';
+                
+                // Show success notification
+                showNotification(`Study group "${result.name}" created successfully!`);
+                
+                // Redirect to the new group
+                window.location.href = `/study/${result.groupId}`;
+                
+            } catch (error) {
+                console.error('Error creating group:', error);
+                showNotification('Error creating study group', 'error');
+            }
+        }
+
+        function joinGroup(groupId) {
+            window.location.href = `/study/${groupId}`;
+        }
+
+        function updateGroupUserCount(groupId, userCount) {
+            const userCountEl = document.querySelector(`[data-user-count="${groupId}"]`);
+            if (userCountEl) {
+                userCountEl.textContent = userCount;
+            }
+        }
+
+        function removeGroupFromList(groupId) {
+            const groupCard = document.querySelector(`[data-group-id="${groupId}"]`);
+            if (groupCard) {
+                groupCard.remove();
+                
+                // Check if no groups left
+                const remainingGroups = document.querySelectorAll('.group-card');
+                if (remainingGroups.length === 0) {
+                    loadGroups(); // Reload to show empty state
+                }
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

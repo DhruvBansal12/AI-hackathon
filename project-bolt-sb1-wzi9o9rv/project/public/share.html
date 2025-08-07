@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared Code - Smart Coding Environment</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="logo-icon">⚡</span>
+                    Smart Code
+                </h1>
+                <nav class="nav">
+                    <a href="/" class="nav-link">Editor</a>
+                    <a href="/pair/new-session" class="nav-link">Pair Code</a>
+                    <a href="/study/new-group" class="nav-link">Study Group</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="editor-container">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <h3 id="codeTitle" class="code-title">Shared Code</h3>
+                        <span id="languageDisplay" class="language-display">JavaScript</span>
+                    </div>
+                    <div class="toolbar-right">
+                        <button id="copyBtn" class="btn btn-secondary">
+                            <span class="btn-icon">📋</span>
+                            Copy Code
+                        </button>
+                        <button id="forkBtn" class="btn btn-primary">
+                            <span class="btn-icon">🍴</span>
+                            Fork & Edit
+                        </button>
+                    </div>
+                </div>
+
+                <div class="editor-wrapper">
+                    <div id="editor" class="editor readonly"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script>
+        let editor;
+        const codeId = window.location.pathname.split('/').pop();
+
+        require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            // Load shared code
+            fetch(`/api/share/${codeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.body.innerHTML = '<div class="error-message">Shared code not found</div>';
+                        return;
+                    }
+
+                    document.getElementById('codeTitle').textContent = data.title;
+                    document.getElementById('languageDisplay').textContent = data.language.toUpperCase();
+
+                    editor = monaco.editor.create(document.getElementById('editor'), {
+                        value: data.code,
+                        language: data.language,
+                        theme: 'vs-dark',
+                        readOnly: true,
+                        fontSize: 14,
+                        minimap: { enabled: true },
+                        scrollBeyondLastLine: false
+                    });
+
+                    // Copy button functionality
+                    document.getElementById('copyBtn').addEventListener('click', () => {
+                        navigator.clipboard.writeText(data.code).then(() => {
+                            showNotification('Code copied to clipboard!');
+                        });
+                    });
+
+                    // Fork button functionality
+                    document.getElementById('forkBtn').addEventListener('click', () => {
+                        const params = new URLSearchParams({
+                            code: encodeURIComponent(data.code),
+                            language: data.language
+                        });
+                        window.open(`/?${params.toString()}`, '_blank');
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading shared code:', error);
+                    document.body.innerHTML = '<div class="error-message">Error loading shared code</div>';
+                });
+        });
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification success';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

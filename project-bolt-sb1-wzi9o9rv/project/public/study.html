@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Group - Smart Coding Environment</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="logo-icon">⚡</span>
+                    Smart Code
+                </h1>
+                <nav class="nav">
+                    <a href="/" class="nav-link">Editor</a>
+                    <a href="/pair/new-session" class="nav-link">Pair Code</a>
+                    <a href="/groups" class="nav-link">Study Groups</a>
+                    <a href="/study/new-group" class="nav-link active">Current Group</a>
+                </nav>
+                <div class="connection-status">
+                    <span id="connectionStatus" class="status-indicator">Connecting...</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content study-layout">
+            <div class="editor-section">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <div class="group-info-display">
+                            <h3 id="groupName" class="group-name-display">Study Group</h3>
+                            <span id="groupId" class="group-id-display"></span>
+                        </div>
+                        <select id="languageSelector" class="language-selector">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="java">Java</option>
+                            <option value="cpp">C++</option>
+                        </select>
+                        <button id="runBtn" class="btn btn-primary">
+                            <span class="btn-icon">▶</span>
+                            Run Code
+                        </button>
+                    </div>
+                    <div class="toolbar-right">
+                        <div id="connectedUsers" class="connected-users">
+                            <span class="users-label">Members:</span>
+                            <div class="users-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editor-wrapper">
+                    <div id="editor" class="editor"></div>
+                    <div class="output-container">
+                        <div class="output-header">
+                            <h3>Output</h3>
+                            <button id="clearOutput" class="btn-clear">Clear</button>
+                        </div>
+                        <div id="output" class="output"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="collaboration-panel">
+                <div class="panel-tabs">
+                    <button class="tab-btn active" data-tab="chat">Chat</button>
+                    <button class="tab-btn" data-tab="questions">Questions</button>
+                </div>
+
+                <div class="tab-content active" data-tab="chat">
+                    <div class="chat-container">
+                        <div id="chatMessages" class="chat-messages"></div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chatInput" placeholder="Type your message..." class="chat-input">
+                            <button id="sendMessage" class="btn btn-primary">Send</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" data-tab="questions">
+                    <div class="questions-container">
+                        <div class="add-question">
+                            <textarea id="questionInput" placeholder="Add an interview question or coding challenge..." class="question-input"></textarea>
+                            <button id="addQuestion" class="btn btn-primary">Add Question</button>
+                        </div>
+                        <div id="questionsList" class="questions-list"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script src="../js/study.js"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Coding Environment</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="logo-icon">⚡</span>
+                    Smart Code
+                </h1>
+                <nav class="nav">
+                    <a href="/" class="nav-link active">Editor</a>
+                    <a href="/pair/new-session" class="nav-link">Pair Code</a>
+                    <a href="/study/new-group" class="nav-link">Study Group</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="editor-container">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <select id="languageSelector" class="language-selector">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="java">Java</option>
+                            <option value="cpp">C++</option>
+                        </select>
+                        <button id="runBtn" class="btn btn-primary">
+                            <span class="btn-icon">▶</span>
+                            Run Code
+                        </button>
+                    </div>
+                    <div class="toolbar-right">
+                        <button id="copyBtn" class="btn btn-secondary">
+                            <span class="btn-icon">📋</span>
+                            Copy
+                        </button>
+                        <button id="downloadBtn" class="btn btn-secondary">
+                            <span class="btn-icon">💾</span>
+                            Download
+                        </button>
+                        <button id="shareBtn" class="btn btn-secondary">
+                            <span class="btn-icon">🔗</span>
+                            Share
+                        </button>
+                        <button id="analyzeBtn" class="btn btn-secondary">
+                            <span class="btn-icon">🧠</span>
+                            Analyze Code
+                        </button>
+                    </div>
+                </div>
+
+                <div class="editor-wrapper">
+                    <div id="editor" class="editor"></div>
+                    <div class="output-container">
+                        <div class="output-header">
+                            <h3>Output</h3>
+                            <button id="clearOutput" class="btn-clear">Clear</button>
+                        </div>
+                        <div id="output" class="output"></div>
+                    </div>
+                    <div id="analysisContainer" class="analysis-container" style="display:none;">
+                        <div class="output-header">
+                            <h3>Analysis Results</h3>
+                            <button id="clearAnalysis" class="btn-clear">Clear</button>
+                        </div>
+                        <div id="analysisOutput" class="output"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Share Your Code</h3>
+                <button id="closeModal" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="shareTitle" placeholder="Code title (optional)" class="share-input">
+                <div class="share-result">
+                    <p>Share URL:</p>
+                    <div class="url-container">
+                        <input type="text" id="shareUrl" readonly class="share-url">
+                        <button id="copyShareUrl" class="btn btn-primary">Copy URL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script src="js/editor.js"></script>
+</body>
+</html>
